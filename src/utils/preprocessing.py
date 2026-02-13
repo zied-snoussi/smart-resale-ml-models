@@ -158,7 +158,10 @@ def extract_features_ebay(df):
         ).fillna(0)
     
     # Fill missing screen size from title
-    mask_no_screen = (features.get('screen_size', 0) == 0)
+    if 'screen_size' not in features.columns:
+        features['screen_size'] = 0.0
+    
+    mask_no_screen = (features['screen_size'] == 0) | features['screen_size'].isna()
     scores_extracted = df.loc[mask_no_screen, 'Title'].str.extract(r'(\d+\.?\d*)\s*(?:inch|\"|\'\')', flags=re.IGNORECASE, expand=False)
     features.loc[mask_no_screen, 'screen_size'] = pd.to_numeric(scores_extracted, errors='coerce').fillna(0)
     
@@ -171,7 +174,10 @@ def extract_features_ebay(df):
         ).fillna(0)
         
     # Fill missing memory from title
-    mask_no_mem = (features.get('memory_gb', 0) == 0)
+    if 'memory_gb' not in features.columns:
+        features['memory_gb'] = 0.0
+        
+    mask_no_mem = (features['memory_gb'] == 0) | features['memory_gb'].isna()
     mem_extracted = df.loc[mask_no_mem, 'Title'].str.extract(r'(\d+)\s*(?:GB|TB|Gigabyte)', flags=re.IGNORECASE, expand=False)
     features.loc[mask_no_mem, 'memory_gb'] = pd.to_numeric(mem_extracted, errors='coerce').fillna(0)
     

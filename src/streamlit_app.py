@@ -3,7 +3,7 @@ import requests
 import json
 
 # Configuration
-API_URL = "http://localhost:5000/predict"
+API_URL = "http://localhost:5001/predict"
 
 st.set_page_config(page_title="Smart Resale Price Predictor", page_icon="💰", layout="wide")
 
@@ -43,6 +43,7 @@ with col2:
         has_brand = 1 if any(b in title.lower() for b in ['apple', 'samsung', 'sony', 'dell', 'hp']) else 0
         
         payload = {
+            "title": title,
             "title_length": len(title),
             "word_count": len(title.split()),
             "is_new": is_new,

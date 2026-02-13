@@ -62,6 +62,11 @@ def run_feature_engineering():
     # Fit & Transform
     tfidf_matrix = tfidf.fit_transform(titles)
     svd_matrix = svd.fit_transform(tfidf_matrix)
+
+    # Save Vectorizers for API inference
+    print("   💾 Saving vectorizers...")
+    joblib.dump(tfidf, 'models/tfidf.pkl')
+    joblib.dump(svd, 'models/svd.pkl')
     
     # Add to features DataFrame
     svd_cols = [f'text_svd_{i}' for i in range(svd_matrix.shape[1])]
