@@ -10,6 +10,9 @@ from sklearn.metrics import (mean_squared_error, r2_score, mean_absolute_error,
                              accuracy_score, classification_report, silhouette_score)
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
 
 class RegressionTrainer:
     """OBJECTIF 1: Prédire le prix de revente"""
@@ -26,6 +29,7 @@ class RegressionTrainer:
         }
         self.results = {}
         self.best_model = None
+        self.best_model_name = None
     
     def train_all(self, X_train, y_train, X_test, y_test):
         """Train all regression models"""
@@ -58,9 +62,47 @@ class RegressionTrainer:
         
         best_name = min(self.results, key=lambda x: self.results[x]['rmse'])
         self.best_model = self.results[best_name]['model']
+        self.best_model_name = best_name
         print(f"🏆 Best Model: {best_name}")
         
         return self.results
+
+    def save_feature_importance(self, feature_names, save_path='models/feature_importance.png'):
+        """Generate and save feature importance plot"""
+        if self.best_model is None:
+            print("❌ No model trained yet.")
+            return
+
+        importances = None
+        
+        # Extract importances based on model type
+        if hasattr(self.best_model, 'feature_importances_'):
+            importances = self.best_model.feature_importances_
+        elif hasattr(self.best_model, 'steps'): # Pipeline
+            # Check if final step is linear model
+            final_step = self.best_model.steps[-1][1]
+            if hasattr(final_step, 'coef_'):
+                importances = np.abs(final_step.coef_)
+        
+        if importances is not None:
+            # Create DataFrame
+            fi_df = pd.DataFrame({
+                'Feature': feature_names,
+                'Importance': importances
+            }).sort_values('Importance', ascending=False).head(15)
+            
+            # Plot
+            plt.figure(figsize=(10, 8))
+            sns.barplot(x='Importance', y='Feature', data=fi_df, hue='Feature', palette='viridis', legend=False)
+            plt.title(f'Top 15 Features - {self.best_model_name}')
+            plt.tight_layout()
+            
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            plt.savefig(save_path)
+            print(f"📊 Feature importance saved to {save_path}")
+            plt.close()
+        else:
+            print("ℹ️ Model does not support feature importance extraction.")
 
 class ClassificationTrainer:
     """OBJECTIF 2: Évaluer si un produit est surévalué/sous-évalué"""

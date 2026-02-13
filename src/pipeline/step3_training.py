@@ -49,6 +49,10 @@ def run_training():
     reg_trainer = RegressionTrainer()
     reg_trainer.train_all(X_train, y_train, X_test, y_test)
     save_model(reg_trainer.best_model, 'ebay_price_predictor')
+    
+    # 🆕 Feature Importance Plot
+    if hasattr(X_train, 'columns'):
+        reg_trainer.save_feature_importance(X_train.columns)
 
     # ============================================================
     # TASK 2: CLASSIFICATION

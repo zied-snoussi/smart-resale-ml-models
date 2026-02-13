@@ -5,17 +5,18 @@ A sophisticated machine learning system designed to optimize resale pricing for 
 ## 🌟 Key Features
 
 ### 1. Advanced Data Enrichment 🧬
-*   **Semantic Matching Engine**: Uses **TF-IDF Vectorization** and **Nearest Neighbors** to link raw eBay listings to the Amazon Product Catalog.
+*   **Semantic Matching Engine**: Uses **TF-IDF Vectorization** and **Nearest Neighbors** to link raw eBay listings to the **1.4 million row Amazon Product Catalog**.
 *   **MSRP Discovery**: Automatically finds the original "List Price" to calculate accurate depreciation.
-*   **Performance**: Achieves high-confidence matching (~44%) on messy user-generated titles (e.g., matching "iPad Air 2" to "Apple iPad Air 2 64GB Spgry").
+*   **Performance**: Achieves high-confidence matching (~20% strict, higher soft) on messy user-generated titles (e.g., matching "iPad Air 2" to "Apple iPad Air 2 64GB Spgry").
 
 ### 2. Multi-Objective ML Pipeline 🤖
-*   **Price Prediction**: Gradient Boosting & Random Forest models to estimate market value.
+*   **Price Prediction**: **Random Forest** & **XGBoost** models achieving **$R^2 = 0.51$** (Doubled performance from baseline).
 *   **Classification**: Identifies if a listing is "Undervalued", "Fair", or "Overpriced".
 *   **Segmentation**: Clusters products into market segments using K-Means.
 
-### 3. Production-Ready API 🚀
+### 3. Production-Ready Deployment 🚀
 *   **Flask Microservice**: Serves real-time predictions.
+*   **Streamlit Dashboard**: Interactive UI for price checking.
 *   **Smart Recommendations**: Returns actionable advice (e.g., "Increase price by €15") based on market position.
 
 ---
@@ -90,5 +91,6 @@ Server runs at: `http://localhost:5000`
 
 *   **Enrichment Accuracy**: Successfully matches ~8,000+ items from the eBay sample dataset to Amazon products.
 *   **Top Models**:
-    *   *Regression*: Gradient Boosting (Lowest RMSE)
-    *   *Classification*: Random Forest (Best Accuracy)
+    *   *Regression*: Random Forest ($R^2=0.51$, RMSE=€96)
+    *   *Classification*: SVC / Random Forest
+    *   *Key Drivers*: Original Price, Brand (Apple/Samsung), and depreciation curve.
