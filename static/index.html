@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resale Price Predictor</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+      h1 {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+      }
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 600;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border 0.3s;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      button {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      button:hover {
+        transform: translateY(-2px);
+      }
+      .result {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        display: none;
+      }
+      .result.show {
+        display: block;
+      }
+      .price-box {
+        font-size: 2em;
+        color: #667eea;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      .recommendation {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        border-left: 4px solid #667eea;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎯 Resale Price Predictor</h1>
+      <p class="subtitle">Prédiction intelligente du prix de revente</p>
+
+      <form id="predictForm">
+        <div class="form-group">
+          <label>Prix demandé (€)</label>
+          <input
+            type="number"
+            id="current_price"
+            step="0.01"
+            value="550"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Note moyenne (0-5)</label>
+          <input
+            type="number"
+            id="average_rating"
+            step="0.1"
+            min="0"
+            max="5"
+            value="4.5"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Nombre d'avis</label>
+          <input type="number" id="num_reviews" value="150" required />
+        </div>
+
+        <div class="form-group">
+          <label>État du produit</label>
+          <select id="condition" required>
+            <option value="new">Neuf</option>
+            <option value="used" selected>Utilisé</option>
+            <option value="refurbished">Reconditionné</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Marque reconnue?</label>
+          <select id="has_brand" required>
+            <option value="1" selected>Oui</option>
+            <option value="0">Non</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Taille écran (pouces)</label>
+          <input type="number" id="screen_size" step="0.1" value="6.1" />
+        </div>
+
+        <div class="form-group">
+          <label>Mémoire (GB)</label>
+          <input type="number" id="memory_gb" value="128" />
+        </div>
+
+        <button type="submit">Prédire le prix 🚀</button>
+      </form>
+
+      <div id="result" class="result">
+        <h2>Résultats</h2>
+        <div class="price-box">
+          Prix estimé: <span id="predicted_price"></span>€
+        </div>
+        <p><strong>Catégorie:</strong> <span id="pricing_category"></span></p>
+        <p><strong>Segment:</strong> Cluster <span id="cluster"></span></p>
+        <div id="recommendations"></div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("predictForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const condition = document.getElementById("condition").value;
+          const data = {
+            current_price: parseFloat(
+              document.getElementById("current_price").value,
+            ),
+            average_rating: parseFloat(
+              document.getElementById("average_rating").value,
+            ),
+            num_reviews: parseInt(document.getElementById("num_reviews").value),
+            title_length: 45,
+            word_count: 8,
+            is_new: condition === "new" ? 1 : 0,
+            is_used: condition === "used" ? 1 : 0,
+            is_refurbished: condition === "refurbished" ? 1 : 0,
+            has_brand: parseInt(document.getElementById("has_brand").value),
+            screen_size: parseFloat(
+              document.getElementById("screen_size").value || 0,
+            ),
+            memory_gb: parseInt(
+              document.getElementById("memory_gb").value || 0,
+            ),
+          };
+
+          try {
+            const response = await fetch("http://localhost:5000/predict", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              document.getElementById("predicted_price").textContent =
+                result.predicted_price;
+              document.getElementById("pricing_category").textContent =
+                result.pricing_category;
+              document.getElementById("cluster").textContent = result.cluster;
+
+              const recsHTML = result.recommendations
+                .map(
+                  (rec) => `
+                        <div class="recommendation">
+                            <strong>${rec.action}</strong><br>
+                            Prix suggéré: €${rec.suggested_price.toFixed(2)}<br>
+                            ${rec.reason}<br>
+                            <em>Impact: ${rec.impact}</em>
+                        </div>
+                    `,
+                )
+                .join("");
+
+              document.getElementById("recommendations").innerHTML = recsHTML;
+              document.getElementById("result").classList.add("show");
+            }
+          } catch (error) {
+            alert("Erreur: " + error.message);
+          }
+        });
+    </script>
+  </body>
+</html>
