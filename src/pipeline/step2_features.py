@@ -20,17 +20,28 @@ def run_feature_engineering():
     print("🚀"*30)
 
     # 1. Load Cleaned Data
-    input_path = 'data/processed/ebay_clean.joblib'
+    input_path = 'data/processed/ebay_prep.pkl'
+        
     if not os.path.exists(input_path):
-        print(f"❌ Error: {input_path} not found. Run Step 1 first.")
+        print(f"❌ Error: processed data ({input_path}) not found. Run Step 1 first.")
         return
 
-    print(f"\n📥 Loading cleaned data from {input_path}...")
-    df_clean = joblib.load(input_path)
+    print(f"\n📥 Loading data from {input_path}...")
+    df_clean = pd.read_pickle(input_path)
 
     # 2. Extract Features
     print("\n⚙️ Extracting features...")
     features = extract_features_ebay(df_clean)
+    
+    # Add new enriched features if they exist and have enough coverage
+    if 'depreciation_pct' in df_clean.columns:
+        # Check coverage
+        valid_count = df_clean['depreciation_pct'].gt(0).sum()
+        if valid_count > 100: # Arbitrary threshold to decide if useful
+            print(f"   ℹ️ Including depreciation feature ({valid_count} valid values)")
+            features['depreciation_pct'] = df_clean['depreciation_pct']
+        else:
+             print(f"   ℹ️ Skipping depreciation feature (only {valid_count} valid values)")
     
     # Define Target and Features
     # Exclude target variables from X
