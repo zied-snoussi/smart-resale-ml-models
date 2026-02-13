@@ -78,7 +78,7 @@ pillow==12.1.1
 platformdirs==4.7.0
 prometheus_client==0.24.1
 prompt_toolkit==3.0.52
-protobuf==6.33.5
+protobuf<=3.20.3
 psutil==7.2.2
 pure_eval==0.2.3
 pycparser==3.0
@@ -124,3 +124,4 @@ Werkzeug==3.1.5
 widgetsnbextension==4.0.15
 xgboost
 streamlit
+standard-imghdr
