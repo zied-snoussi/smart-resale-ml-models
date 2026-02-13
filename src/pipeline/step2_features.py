@@ -42,6 +42,9 @@ def run_feature_engineering():
         if valid_count > 100: # Arbitrary threshold to decide if useful
             print(f"   ℹ️ Including depreciation feature ({valid_count} valid values)")
             features['depreciation_pct'] = df_clean['depreciation_pct']
+            # Pass through the new demand feature too
+            if 'amazon_demand' in df_clean.columns:
+                 features['amazon_demand'] = df_clean['amazon_demand']
         else:
              print(f"   ℹ️ Skipping depreciation feature (only {valid_count} valid values)")
 

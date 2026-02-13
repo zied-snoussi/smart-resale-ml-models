@@ -82,7 +82,8 @@ def enrich_ebay_with_amazon(df_ebay):
         'original_price': [],
         'matched_asin': [],
         'match_score': [],
-        'match_title': []
+        'match_title': [],
+        'demand_score': []
     }
     
     # Similarity Threshold (0.0 = identical, 1.0 = different)
@@ -98,14 +99,27 @@ def enrich_ebay_with_amazon(df_ebay):
             amz_row = df_amz.iloc[idx]
             
             # Determine original price (prefer List Price, fallback to Price)
+            # PRO FIX: Ensure we use the retail price if available
             orig = amz_row.get('listPrice', 0)
-            if orig == 0 or pd.isna(orig):
-                orig = amz_row.get('price', 0)
+            cur_price = amz_row.get('price', 0)
+            
+            # Use listPrice if valid (>0), otherwise use current price
+            if orig > 0:
+                final_ref_price = orig
+            elif cur_price > 0:
+                final_ref_price = cur_price
+            else:
+                final_ref_price = 0
                 
-            matched_features['original_price'].append(orig)
+            matched_features['original_price'].append(final_ref_price)
             matched_features['matched_asin'].append(amz_row['asin'])
             matched_features['match_score'].append(1 - dist) # Convert to similarity score
             matched_features['match_title'].append(amz_row['title'])
+            
+            # Additional Features from Amazon
+            # Get "boughtInLastMonth" as a Demand Signal
+            matched_features['demand_score'].append(amz_row.get('boughtInLastMonth', 0))
+            
             matches_found += 1
         else:
             # No good match
@@ -113,11 +127,13 @@ def enrich_ebay_with_amazon(df_ebay):
             matched_features['matched_asin'].append(None)
             matched_features['match_score'].append(0)
             matched_features['match_title'].append(None)
+            matched_features['demand_score'].append(0)
 
     # 6. assign to dataframe
     df_ebay['original_price'] = matched_features['original_price']
     df_ebay['matched_asin'] = matched_features['matched_asin']
     df_ebay['match_confidence'] = matched_features['match_score']
+    df_ebay['amazon_demand'] = matched_features['demand_score']
     
     # Calculate Depreciation
     if 'price_cleaned' not in df_ebay.columns:

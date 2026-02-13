@@ -66,15 +66,16 @@ def preprocess_ebay_data(df):
     
     # Remove price outliers (CRITICAL FOR MODEL PERFORMANCE)
     print("   Removing price outliers...")
-    df = remove_outliers(df, 'price_cleaned', method='iqr', threshold=1.5)
-    
-    # Also remove unreasonably high prices (likely data errors)
-    max_reasonable_price = 10000  # €10,000 max for most consumer electronics
+    # Aggressively remove outliers first (Hard Cap as per user recommendation)
+    max_reasonable_price = 5000  # Cap at €5,000 for standard electronics
     before = len(df)
     df = df[df['price_cleaned'] <= max_reasonable_price]
     removed = before - len(df)
     if removed > 0:
         print(f"   Removed {removed:,} products with price > €{max_reasonable_price}")
+
+    # Standard outlier removal after hard cap
+    df = remove_outliers(df, 'price_cleaned', method='iqr', threshold=1.5)
     
     # Clean ratings
     df['average_rating'] = pd.to_numeric(df['Average Rating'], errors='coerce').fillna(0)
@@ -133,22 +134,46 @@ def extract_features_ebay(df):
     features['is_used'] = df['Title'].str.contains('used|Used|USED', na=False).astype(int)
     features['is_refurbished'] = df['Title'].str.contains('refurb|Refurb', na=False).astype(int)
     
-    # 5. BRAND PRESENCE
-    features['has_brand'] = df['Title'].str.contains('Apple|Samsung|Sony|LG|Dell|HP|Lenovo|Asus', na=False).astype(int)
+    # 5. BRAND PRESENCE (Top Brands)
+    # Checks specifically for "Premium" brands that hold value
+    features['is_apple'] = df['Title'].str.contains(r'Apple|iPhone|iPad|MacBook|AirPods', case=False, na=False).astype(int)
+    features['is_samsung'] = df['Title'].str.contains(r'Samsung|Galaxy', case=False, na=False).astype(int)
+    features['is_sony'] = df['Title'].str.contains(r'Sony', case=False, na=False).astype(int)
+    features['has_brand'] = df['Title'].str.contains('Apple|Samsung|Sony|LG|Dell|HP|Lenovo|Asus|Microsoft|Nintendo', case=False, na=False).astype(int)
     
-    # 6. SCREEN SIZE (for electronics)
+    # 6. NEGATIVE SENTIMENT (High 1-star ratio = bad resale value)
+    if 'One Star' in df.columns and 'Number Of Ratings' in df.columns:
+        one_star = pd.to_numeric(df['One Star'], errors='coerce').fillna(0)
+        total_ratings = pd.to_numeric(df['Number Of Ratings'], errors='coerce').fillna(1) # avoid div0
+        features['negative_ratio'] = (one_star / total_ratings).clip(0, 1)
+    else:
+        features['negative_ratio'] = 0.0
+
+    # 7. SCREEN SIZE (Regex Extraction from Title if column missing)
+    # Extracts "12.9 inch", "15.6"", etc.
     if 'Screen Size' in df.columns:
         features['screen_size'] = pd.to_numeric(
-            df['Screen Size'].str.extract(r'(\d+\.?\d*)')[0], 
+            df['Screen Size'].str.extract(r'(\d+\.?\d*)', expand=False), 
             errors='coerce'
         ).fillna(0)
     
-    # 7. MEMORY SIZE
+    # Fill missing screen size from title
+    mask_no_screen = (features.get('screen_size', 0) == 0)
+    scores_extracted = df.loc[mask_no_screen, 'Title'].str.extract(r'(\d+\.?\d*)\s*(?:inch|\"|\'\')', flags=re.IGNORECASE, expand=False)
+    features.loc[mask_no_screen, 'screen_size'] = pd.to_numeric(scores_extracted, errors='coerce').fillna(0)
+    
+    # 8. MEMORY SIZE (Regex Extraction)
+    # Extracts "64GB", "256 GB", "1TB"
     if 'Internal Memory' in df.columns:
         features['memory_gb'] = pd.to_numeric(
-            df['Internal Memory'].str.extract(r'(\d+)')[0], 
+            df['Internal Memory'].str.extract(r'(\d+)', expand=False), 
             errors='coerce'
         ).fillna(0)
+        
+    # Fill missing memory from title
+    mask_no_mem = (features.get('memory_gb', 0) == 0)
+    mem_extracted = df.loc[mask_no_mem, 'Title'].str.extract(r'(\d+)\s*(?:GB|TB|Gigabyte)', flags=re.IGNORECASE, expand=False)
+    features.loc[mask_no_mem, 'memory_gb'] = pd.to_numeric(mem_extracted, errors='coerce').fillna(0)
     
     print(f"✓ Extracted {len(features.columns)} features")
     return features

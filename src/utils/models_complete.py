@@ -2,6 +2,7 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, GradientBoostingRegressor
 from sklearn.svm import SVR, SVC
 from sklearn.neighbors import KNeighborsRegressor
+import xgboost as xgb
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -17,6 +18,8 @@ class RegressionTrainer:
         self.models = {
             'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1),
             'Gradient Boosting': GradientBoostingRegressor(n_estimators=100, random_state=42),
+            # XGBoost added (handles NaN values natively)
+            'XGBoost': xgb.XGBRegressor(random_state=42, n_jobs=-1, objective='reg:squarederror'),
             # Use scaling for linear models and SVM to improve performance and convergence
             'Linear Regression': make_pipeline(StandardScaler(), LinearRegression()),
             'SVR': make_pipeline(StandardScaler(), SVR(kernel='rbf'))
