@@ -204,15 +204,19 @@ class ClusteringAnalysis:
         self.cluster_profiles = {}
     
     def fit(self, X):
-        """Cluster products"""
+        """Cluster products with scaling"""
         print(f"\n{'='*60}")
         print(f"📦 OBJECTIF 4: CLUSTERING & SEGMENTATION")
         print(f"{'='*60}\n")
         
-        self.model.fit(X)
+        # Scale features for KMeans
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+        
+        self.model.fit(X_scaled)
         labels = self.model.labels_
         
-        score = silhouette_score(X, labels)
+        score = silhouette_score(X_scaled, labels)
         print(f"Silhouette Score: {score:.4f}\n")
         
         # Analyze clusters

@@ -7,6 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.utils.models_complete import RecommendationSystem
+from src.utils.monitoring import log_step_results
 
 def run_evaluation():
     """
@@ -63,6 +64,7 @@ def run_evaluation():
         print()
 
     print("\n✅ Evaluation complete.")
+    log_step_results("step4_evaluation", {"status": "complete", "samples_tested": min(5, len(X_test))})
 
 if __name__ == "__main__":
     run_evaluation()

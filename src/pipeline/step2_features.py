@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.utils.preprocessing import extract_features_ebay, prepare_train_test_split
+from src.utils.monitoring import validate_dataframe, feature_schema, log_step_results
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 
@@ -36,66 +37,76 @@ def run_feature_engineering():
     features = extract_features_ebay(df_clean)
     
     # Add new enriched features if they exist and have enough coverage
-    if 'depreciation_pct' in df_clean.columns:
+    # ALERT: we keep amazon_demand but EXCLUDE depreciation_pct as it leaks target price
+    if 'amazon_demand' in df_clean.columns:
         # Check coverage
-        valid_count = df_clean['depreciation_pct'].gt(0).sum()
-        if valid_count > 100: # Arbitrary threshold to decide if useful
-            print(f"   ℹ️ Including depreciation feature ({valid_count} valid values)")
-            features['depreciation_pct'] = df_clean['depreciation_pct']
-            # Pass through the new demand feature too
-            if 'amazon_demand' in df_clean.columns:
-                 features['amazon_demand'] = df_clean['amazon_demand']
+        valid_count = df_clean['amazon_demand'].gt(0).sum()
+        if valid_count > 100: 
+            print(f"   ℹ️ Including amazon_demand feature ({valid_count} valid values)")
+            features['amazon_demand'] = df_clean['amazon_demand']
         else:
-             print(f"   ℹ️ Skipping depreciation feature (only {valid_count} valid values)")
+             print(f"   ℹ️ Skipping amazon_demand feature (only {valid_count} valid values)")
 
-    # 3. ADVANCED TEXT FEATURES (TF-IDF + SVD)
-    # We vectorized matching earlier, now let's use vectors for REGRESSION
-    print("   🔤 Generating Text Vectors (TF-IDF)...")
+    # Define Target and Features
+    # Ensure current_price is in features
+    if 'current_price' in features.columns:
+        X_raw = features.drop(['current_price', 'log_price'], axis=1, errors='ignore')
+        y = features['current_price']
+    else:
+        # Fallback if cleaner didn't put it in features check original df
+        X_raw = features
+        y = df_clean['price_cleaned']
+
+    # 3. Train/Test Split (EARLY SPLIT to avoid leakage in Vectorizers)
+    print("\n✂️ Splitting data (80/20)...")
+    X_train_raw, X_test_raw, y_train, y_test = prepare_train_test_split(X_raw, y, test_size=0.2)
     
-    # Use 50 components (keep it light)
+    # 4. ADVANCED TEXT FEATURES (TF-IDF + SVD)
+    # Fit ONLY on Training data, Transform both
+    print("\n🔤 Generating Text Vectors (Fit on Train ONLY)...")
+    
     tfidf = TfidfVectorizer(max_features=500, stop_words='english')
     svd = TruncatedSVD(n_components=20, random_state=42)
     
-    # Fill NaN titles
-    titles = df_clean['Title'].fillna("").astype(str)
+    # Titles corresponding to the split
+    train_titles = df_clean.loc[X_train_raw.index, 'Title'].fillna("").astype(str)
+    test_titles = df_clean.loc[X_test_raw.index, 'Title'].fillna("").astype(str)
     
-    # Fit & Transform
-    tfidf_matrix = tfidf.fit_transform(titles)
-    svd_matrix = svd.fit_transform(tfidf_matrix)
+    # Fit & Transform Train
+    train_tfidf = tfidf.fit_transform(train_titles)
+    train_svd = svd.fit_transform(train_tfidf)
+    
+    # Transform Test (NO FITTING)
+    test_tfidf = tfidf.transform(test_titles)
+    test_svd = svd.transform(test_tfidf)
 
     # Save Vectorizers for API inference
     print("   💾 Saving vectorizers...")
     joblib.dump(tfidf, 'models/tfidf.pkl')
     joblib.dump(svd, 'models/svd.pkl')
     
-    # Add to features DataFrame
-    svd_cols = [f'text_svd_{i}' for i in range(svd_matrix.shape[1])]
-    df_svd = pd.DataFrame(svd_matrix, columns=svd_cols, index=features.index)
-    features = pd.concat([features, df_svd], axis=1)
+    # Combine with other features
+    svd_cols = [f'text_svd_{i}' for i in range(train_svd.shape[1])]
+    
+    X_train_svd = pd.DataFrame(train_svd, columns=svd_cols, index=X_train_raw.index)
+    X_test_svd = pd.DataFrame(test_svd, columns=svd_cols, index=X_test_raw.index)
+    
+    X_train = pd.concat([X_train_raw, X_train_svd], axis=1)
+    X_test = pd.concat([X_test_raw, X_test_svd], axis=1)
+    
     print(f"   ✓ Added {len(svd_cols)} semantic text features")
-    
-    # Define Target and Features
-    # Exclude target variables from X
-    # Ensure current_price is in features
-    if 'current_price' in features.columns:
-        X = features.drop(['current_price', 'log_price'], axis=1, errors='ignore')
-        y = features['current_price']
-    else:
-        # Fallback if cleaner didn't put it in features check original df
-        X = features
-        y = df_clean['price_cleaned']
-    
-    print(f"   Features shape: {X.shape}")
-    print(f"   Target shape: {y.shape}")
-    
-    print(f"   Features shape: {X.shape}")
-    print(f"   Target shape: {y.shape}")
+    print(f"   Final Features Shape: {X_train.shape}")
 
-    # 3. Train/Test Split
-    print("\n✂️ Splitting data (80/20)...")
-    X_train, X_test, y_train, y_test = prepare_train_test_split(X, y, test_size=0.2)
-    
-    # 4. Save Split Data
+    # 5. Validate and Log
+    validate_dataframe(X_train, feature_schema, "step2_features_train")
+    log_step_results("step2_features", {
+        "X_train_shape": X_train.shape,
+        "X_test_shape": X_test.shape,
+        "num_features": X_train.shape[1],
+        "brand_coverage": X_train['has_brand'].mean()
+    })
+
+    # 6. Save Split Data
     output_dir = 'data/processed'
     os.makedirs(output_dir, exist_ok=True)
     

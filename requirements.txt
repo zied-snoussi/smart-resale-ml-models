@@ -125,3 +125,4 @@ widgetsnbextension==4.0.15
 xgboost
 streamlit
 standard-imghdr
+pandera

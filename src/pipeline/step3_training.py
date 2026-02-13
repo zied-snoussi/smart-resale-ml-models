@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.utils.models_complete import RegressionTrainer, ClassificationTrainer, ClusteringAnalysis
+from src.utils.monitoring import log_step_results, generate_model_performance_report
 
 def save_model(model, name):
     """Helper to save model"""
@@ -50,6 +51,18 @@ def run_training():
     reg_trainer.train_all(X_train, y_train, X_test, y_test)
     save_model(reg_trainer.best_model, 'ebay_price_predictor')
     
+    # NEW: Log regression results
+    log_step_results("step3_regression", {
+        "best_model": reg_trainer.best_model_name,
+        "rmse": reg_trainer.results[reg_trainer.best_model_name]['rmse'],
+        "r2": reg_trainer.results[reg_trainer.best_model_name]['r2'],
+        "mae": reg_trainer.results[reg_trainer.best_model_name]['mae']
+    })
+    
+    # NEW: Generate Performance Report
+    y_pred = reg_trainer.best_model.predict(X_test)
+    generate_model_performance_report(y_test, y_pred, "regression_performance")
+
     # 🆕 Feature Importance Plot
     if hasattr(X_train, 'columns'):
         reg_trainer.save_feature_importance(X_train.columns)
@@ -74,6 +87,11 @@ def run_training():
     
     clf_trainer.train_all(X_train, y_train_cat, X_test, y_test_cat)
     save_model(clf_trainer.best_model, 'ebay_pricing_classifier')
+
+    # NEW: Log classification results
+    log_step_results("step3_classification", {
+        "accuracy": clf_trainer.results[max(clf_trainer.results, key=lambda x: clf_trainer.results[x]['accuracy'])]['accuracy']
+    })
 
     # ============================================================
     # TASK 3: CLUSTERING
