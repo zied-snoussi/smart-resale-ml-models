@@ -3,6 +3,8 @@ from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, Grad
 from sklearn.svm import SVR, SVC
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.cluster import KMeans, DBSCAN
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (mean_squared_error, r2_score, mean_absolute_error,
                              accuracy_score, classification_report, silhouette_score)
 import numpy as np
@@ -15,8 +17,9 @@ class RegressionTrainer:
         self.models = {
             'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1),
             'Gradient Boosting': GradientBoostingRegressor(n_estimators=100, random_state=42),
-            'Linear Regression': LinearRegression(),
-            'SVR': SVR(kernel='rbf')
+            # Use scaling for linear models and SVM to improve performance and convergence
+            'Linear Regression': make_pipeline(StandardScaler(), LinearRegression()),
+            'SVR': make_pipeline(StandardScaler(), SVR(kernel='rbf'))
         }
         self.results = {}
         self.best_model = None
@@ -62,8 +65,9 @@ class ClassificationTrainer:
     def __init__(self):
         self.models = {
             'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1),
-            'Logistic Regression': LogisticRegression(max_iter=1000),
-            'SVC': SVC(kernel='rbf', probability=True)
+            # Scaling added to fix ConvergenceWarning and improve SVM
+            'Logistic Regression': make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000)),
+            'SVC': make_pipeline(StandardScaler(), SVC(kernel='rbf', probability=True))
         }
         self.results = {}
         self.best_model = None

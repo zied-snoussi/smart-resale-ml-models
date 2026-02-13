@@ -16,19 +16,22 @@ The application fulfills three main objectives:
 ```
 smart-resale-ml-models/
 ├── data/
-│   ├── processed/          # Processed datasets for training
-│   └── raw/                # Original datasets (eBay, Amazon)
-├── models/                 # Saved trained models (.pkl files)
-├── notebooks/              # Jupyter notebooks for exploration
+│   ├── processed/          # Processed datasets (train/test splits)
+│   └── raw/                # Original datasets
+├── models/                 # Saved trained models
 ├── src/
-│   ├── app.py              # Flask API for serving predictions
-│   ├── train_complete.py   # Main pipeline script to train all models
-│   ├── models_complete.py  # Model classes (Regression, Classification, etc.)
-│   ├── preprocessing.py    # Feature engineering and cleaning logic
-│   ├── predict.py          # Standalone prediction script
-│   └── ...
-├── requirements.txt        # Python dependencies
-└── README.md
+│   ├── api/                # API Application
+│   │   └── app.py          # Flask API
+│   ├── pipeline/           # ML Pipeline Scripts
+│   │   ├── run_pipeline.py     # 🚀 Master script
+│   │   ├── step1_data_prep.py  # Data preparation
+│   │   ├── step2_features.py   # Feature engineering
+│   │   ├── step3_training.py   # Model training
+│   │   └── step4_evaluation.py # Evaluation
+│   ├── utils/              # Shared Utilities
+│   │   ├── load_data.py
+│   │   ├── preprocessing.py
+│   │   └── models_complete.py
 ```
 
 ## 🛠️ Installation
@@ -47,30 +50,20 @@ smart-resale-ml-models/
 
 ## 🏃‍♂️ Usage
 
-### 1. Training the Models
+### 1. Training the Pipeline (New)
 
-To train the entire pipeline (processing data, training regression, classification, and clustering models), run:
+Run the full machine learning pipeline with a single command:
 
 ```bash
-python src/train_complete.py
+python src/pipeline/run_pipeline.py
 ```
-
-This will:
-*   Load data from `data/raw/`
-*   Preprocess and extract features
-*   Train multiple models and select the best ones
-*   Save the trained models to the `models/` directory:
-    *   `ebay_price_predictor.pkl`
-    *   `ebay_pricing_classifier.pkl`
-    *   `ebay_recommender.pkl`
-    *   `ebay_clustering.pkl`
 
 ### 2. Running the API
 
-Start the Flask API server to serve predictions:
+Start the Flask API server:
 
 ```bash
-python src/app.py
+python src/api/app.py
 ```
 
 The server will start at `http://localhost:5000`.

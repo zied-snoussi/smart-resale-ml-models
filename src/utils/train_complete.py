@@ -4,11 +4,11 @@ import os
 import joblib
 from datetime import datetime
 
-from load_data import load_ebay_data, load_amazon_products
-from preprocessing import (preprocess_ebay_data, preprocess_amazon_data,
+from src.utils.load_data import load_ebay_data, load_amazon_products
+from src.utils.preprocessing import (preprocess_ebay_data, preprocess_amazon_data,
                           extract_features_ebay, extract_features_amazon,
                           prepare_train_test_split)
-from models_complete import (RegressionTrainer, ClassificationTrainer,
+from src.utils.models_complete import (RegressionTrainer, ClassificationTrainer,
                              RecommendationSystem, ClusteringAnalysis)
 
 def save_model(model, name):
