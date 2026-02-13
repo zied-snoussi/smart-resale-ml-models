@@ -1,0 +1,41 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Data files (don't push to GitHub)
+data/
+*.csv
+*.json
+*.xlsx
+*.db
+
+# Environment variables (keep credentials secret!)
+.env
+
+# Model files (too large for GitHub)
+models/
+*.h5
+*.pkl
+*.pth
+*.ckpt
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
