@@ -123,6 +123,23 @@ def enrich_ebay_with_amazon(df_ebay):
     if 'price_cleaned' not in df_ebay.columns:
          df_ebay['price_cleaned'] = df_ebay['Price'].apply(lambda x: float(re.sub(r'[^\d.]', '', str(x))) if pd.notna(x) else 0)
 
+    # --- SANITY FILTER: REMOVE ILLOGICAL MATCHES ---
+    # Logic: If Used Price > 1.2 * New Retail Price, it's either:
+    # 1. A bad match (e.g. matched a cheap accessory to expensive search)
+    # 2. A data error (e.g. bundle vs single unit)
+    # We invalidate these matches to protect model quality.
+    
+    mask_anomaly = (df_ebay['original_price'] > 0) & (df_ebay['price_cleaned'] > (df_ebay['original_price'] * 1.5))
+    anomaly_count = mask_anomaly.sum()
+    
+    if anomaly_count > 0:
+        print(f"\n🧹 Sanity Filter: Removing {anomaly_count:,} anomalies where Used Price > 1.5x New Price")
+        # Reset these rows to "Unmatched" status
+        df_ebay.loc[mask_anomaly, ['original_price', 'matched_asin', 'match_confidence']] = [0, None, 0]
+        # Recalculate matches found
+        matches_found -= anomaly_count
+
+    # Re-calculate Depreciation after cleaning
     mask = (df_ebay['original_price'] > 0)
     df_ebay['depreciation_pct'] = 0.0
     df_ebay.loc[mask, 'depreciation_pct'] = (

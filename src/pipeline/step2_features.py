@@ -6,6 +6,8 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.utils.preprocessing import extract_features_ebay, prepare_train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import TruncatedSVD
 
 def run_feature_engineering():
     """
@@ -42,11 +44,41 @@ def run_feature_engineering():
             features['depreciation_pct'] = df_clean['depreciation_pct']
         else:
              print(f"   ℹ️ Skipping depreciation feature (only {valid_count} valid values)")
+
+    # 3. ADVANCED TEXT FEATURES (TF-IDF + SVD)
+    # We vectorized matching earlier, now let's use vectors for REGRESSION
+    print("   🔤 Generating Text Vectors (TF-IDF)...")
+    
+    # Use 50 components (keep it light)
+    tfidf = TfidfVectorizer(max_features=500, stop_words='english')
+    svd = TruncatedSVD(n_components=20, random_state=42)
+    
+    # Fill NaN titles
+    titles = df_clean['Title'].fillna("").astype(str)
+    
+    # Fit & Transform
+    tfidf_matrix = tfidf.fit_transform(titles)
+    svd_matrix = svd.fit_transform(tfidf_matrix)
+    
+    # Add to features DataFrame
+    svd_cols = [f'text_svd_{i}' for i in range(svd_matrix.shape[1])]
+    df_svd = pd.DataFrame(svd_matrix, columns=svd_cols, index=features.index)
+    features = pd.concat([features, df_svd], axis=1)
+    print(f"   ✓ Added {len(svd_cols)} semantic text features")
     
     # Define Target and Features
     # Exclude target variables from X
-    X = features.drop(['current_price', 'log_price'], axis=1)
-    y = features['current_price']
+    # Ensure current_price is in features
+    if 'current_price' in features.columns:
+        X = features.drop(['current_price', 'log_price'], axis=1, errors='ignore')
+        y = features['current_price']
+    else:
+        # Fallback if cleaner didn't put it in features check original df
+        X = features
+        y = df_clean['price_cleaned']
+    
+    print(f"   Features shape: {X.shape}")
+    print(f"   Target shape: {y.shape}")
     
     print(f"   Features shape: {X.shape}")
     print(f"   Target shape: {y.shape}")
