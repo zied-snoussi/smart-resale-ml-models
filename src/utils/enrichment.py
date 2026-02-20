@@ -3,7 +3,7 @@ import numpy as np
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
-from src.utils.load_data import load_amazon_products, load_amazon_categories
+from utils.load_data import load_amazon_products, load_amazon_categories
 
 def clean_text_key(text):
     """Normalize text for matching (lowercase, remove special chars)"""
