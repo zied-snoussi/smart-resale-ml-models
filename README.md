@@ -88,3 +88,49 @@ Le système génère des conseils automatiques basés sur la comparaison `Prix A
 * **"Lower Price" :** Si le prix actuel est > 10% au-dessus de la prédiction.
 * **"Increase Price" :** Si le prix actuel est < 10% en dessous de la prédiction.
 * **"Optimal" :** Si l'écart est négligeable.
+
+---
+
+### 1. Compréhension métier et des données
+
+* **Objectifs :** Dans `step3_training.py`, nous avons explicitement séparé la **Régression** (prix exact) et la **Classification** (tiers Low/Mid/High).
+* **Identification :** Votre code identifie clairement les *Features* (MSRP via le matching Amazon, caractéristiques extraites par Regex dans `feature_utils.py`) et le *Label* (colonne `price_cleaned`).
+
+### 2. Préparation des données (Data Preparation)
+
+C'est la partie la plus dense de votre projet :
+
+* **Nettoyage & Outliers :** La fonction `remove_outliers` (méthode IQR) et le "Hard Cap" à 5000€ dans `preprocessing.py` traitent directement ce point. L'utilisation de `np.log1p` (Log-transformation) pour le prix est également implémentée pour stabiliser la variance.
+* **Mise à l'échelle :** Dans `step2_features.py`, la fonction `scale_features` applique un `StandardScaler` (équivalent robuste à Min-Max) pour que les prix et les vecteurs textuels soient comparables.
+* **Feature Engineering :** Vos fonctions Regex extraient la marque, la mémoire et la taille d'écran, ce qui transforme du texte brut en variables hautement corrélées au prix.
+
+### 3. Modélisation (Modeling)
+
+Votre code utilise la **Forêt Aléatoire (Random Forest)** pour la régression et la classification.
+
+* **Pourquoi ce choix ?** La Forêt Aléatoire est une extension des **Arbres de Décision** cités dans votre cours. Elle est plus performante et stable (évite l'overfitting). Elle répond parfaitement à la consigne de tester des modèles basés sur la logique décisionnelle.
+
+### 4. Évaluation (Evaluation)
+
+* **Découpage :** La fonction `prepare_train_test_split` dans `preprocessing.py` effectue la séparation Training/Test.
+* **Métriques :** Dans `visual_utils.py` et `step4_evaluation.py`, nous générons la **Matrice de Confusion** et le rapport de classification (Précision, Recall, F1-Score), ainsi que le graphique de dispersion pour la régression.
+
+### 5. Déploiement (Deployment)
+
+* L'étape de **Persistance** (sauvegarde des fichiers `.pkl` et `.joblib` dans le dossier `models/`) est la porte d'entrée du déploiement.
+* Ces fichiers permettent à une application externe (comme votre futur Dashboard) d'utiliser le modèle pour faire des prédictions en temps réel sans avoir à ré-entraîner l'IA.
+
+---
+
+### 📊 Tableau de correspondance Projet vs Cours
+
+| Étape de votre cours | Implémentation dans votre code | Fichier source |
+| --- | --- | --- |
+| **Outliers** | Méthode IQR (Seuil 1.5) | `utils/preprocessing.py` |
+| **Normalisation** | `StandardScaler` | `utils/feature_utils.py` |
+| **Encodage** | NLP (TF-IDF + SVD) | `utils/feature_utils.py` |
+| **Régression** | `RandomForestRegressor` | `pipeline/step3_training.py` |
+| **Classification** | `RandomForestClassifier` | `pipeline/step3_training.py` |
+| **Matrice de Confusion** | `plot_confusion_matrix` | `utils/visual_utils.py` |
+
+**En résumé :** Votre projet ne se contente pas de suivre ces étapes, il les automatise de manière professionnelle. Vous avez transformé la théorie du cours en un **système de production réel**.
