@@ -1,167 +1,235 @@
-# 🤖 Smart Resale AI : Documentation Technique & Architecture ML
+# 🤖 Smart Resale AI
 
-**Système Expert d'Estimation de Valeur Résiduelle et d'Optimisation de Revente**
+### Intelligent Resale Price Estimation & Decision Optimization System
 
-**Version :** 1.1
+> **Smart Resale AI** is an end-to-end Machine Learning system designed to **estimate fair resale prices**, **segment products by market tier**, and **generate actionable business recommendations** using multi-source e-commerce data.
 
-**Statut :** Production Ready
+**Status:** ✅ Production Ready
+**Version:** 1.1
+**Author:** **Zied Snoussi**
 
-**Auteur :** Zied Snoussi
-
----
-
-## 🏛️ 1. Vue d'Ensemble de l'Architecture
-
-Le système repose sur une architecture modulaire dite **"End-to-End"**, transformant des données brutes hétérogènes (eBay/Amazon) en insights décisionnels actionnables. Le pipeline complet s'exécute en **70 secondes** sur une configuration standard.
-
-### **Phase A : Ingénierie des Données & Alignement Sémantique**
-
-* **Data Cleansing :** Application d'un "Hard Cap" à 5000€ et d'un filtrage statistique (méthode IQR) pour éliminer le bruit et les anomalies de prix.
-* **Matching Multi-Sources :** Utilisation d'un moteur de recherche vectoriel (`TfidfVectorizer` + `NearestNeighbors`) pour réconcilier le catalogue Amazon (MSRP/Prix Neuf) avec les flux transactionnels eBay.
-* **Validation des Données :** Filtre de cohérence logique supprimant les paires où le prix d'occasion excède de 150% le prix neuf identifié.
-
-### **Phase B : Feature Engineering & NLP**
-
-* **Vectorisation Sémantique :** Réduction de dimensionnalité via **LSA** (Latent Semantic Analysis) utilisant la Décomposition en Valeurs Singulières (**SVD**) pour capturer le contexte des titres sur 26 dimensions.
-* **Extraction de Métadonnées :** Parsing par expressions régulières (Regex) pour identifier les variables critiques (Marque, Capacité, État).
-* **Standardisation :** Normalisation via `StandardScaler` pour garantir la convergence et l'équité de poids entre les variables numériques et textuelles.
+🔗 **Repository:** [https://github.com/zied-snoussi/smart-resale-ml-models](https://github.com/zied-snoussi/smart-resale-ml-models)
+🌐 **Live Demo (Dashboard):** [https://smart-resale-ml-models.streamlit.app/](https://smart-resale-ml-models.streamlit.app/)
 
 ---
 
-## 📊 2. Benchmarks de Performance & Métriques
+## 🧠 Project Vision
 
-Le modèle a été validé par un protocole de test rigoureux (Hold-out validation).
+Modern resale markets suffer from:
 
-### **Performance de Régression (Valeur Précise)**
+* Price inconsistency
+* Poor alignment between new and second-hand markets
+* Subjective pricing decisions
 
-| Métrique | Score | Interprétation |
-| --- | --- | --- |
-| **Coefficient** | **0.8589** | 86% de la variance du prix est capturée par le modèle. |
-| **MAE (Erreur Moyenne)** | **32.80€** | Écart moyen extrêmement faible par rapport au prix réel. |
-| **Biais Résiduel** | **Neutre** | Distribution d'erreur centrée sur zéro (pas de sur/sous-estimation systématique). |
+**Smart Resale AI** solves this by combining:
 
-### **Performance de Classification (Segmentation de Marché)**
+* **NLP-powered product matching**
+* **Robust regression & classification models**
+* **Explainable ML outputs**
+* **Business-oriented recommendations**
 
-Le modèle classifie les produits en trois tiers (Low, Mid, High) avec une **précision globale de 91.65%**.
-
-* **Segment "Low" (Accessoires/Entrée de gamme) :** 93.4% de précision.
-* **Segment "Mid" (Cœur de marché) :** 89.0% de rappel (minimise les faux négatifs).
-* **Segment "High" (Produits Premium) :** 92.5% de précision (sécurise les estimations sur les objets à haute valeur).
+The entire ML pipeline executes in **~70 seconds** on a standard machine.
 
 ---
 
-## 🛠️ 3. Stack Technique & Structure
+## 🏗️ System Architecture (End-to-End ML Pipeline)
 
-L'implémentation suit les standards de l'industrie avec une séparation stricte des préoccupations.
+The system transforms **raw heterogeneous data (eBay & Amazon)** into **decision-ready insights**.
+
+### 🔹 Phase A — Data Engineering & Semantic Alignment
+
+**Objectives:** Clean, reconcile, and validate multi-source pricing data.
+
+* **Data Cleansing**
+
+  * Hard price cap at **€5,000**
+  * Outlier removal using **IQR (1.5×)** method
+* **Multi-Source Matching**
+
+  * Semantic matching between **Amazon catalog (new prices)** and **eBay listings**
+  * Vector search using:
+
+    * `TfidfVectorizer`
+    * `NearestNeighbors`
+* **Logical Consistency Validation**
+
+  * Automatic removal of cases where:
+
+    * `Used Price > 150% of New Price`
+
+✔️ Ensures economic realism and data integrity.
+
+---
+
+### 🔹 Phase B — Feature Engineering & NLP
+
+**Objectives:** Convert raw text and metadata into meaningful ML features.
+
+* **Semantic Vectorization**
+
+  * Latent Semantic Analysis (**LSA**)
+  * Dimensionality reduction via **SVD**
+  * Final embedding size: **26 dimensions**
+* **Metadata Extraction**
+
+  * Regex-based parsing:
+
+    * Brand
+    * Storage capacity
+    * Product condition
+* **Feature Scaling**
+
+  * `StandardScaler` to ensure fair feature contribution and model convergence
+
+---
+
+## 📊 Model Performance & Benchmarks
+
+Validation performed using **hold-out testing** with strict evaluation metrics.
+
+### 📈 Regression Performance (Exact Price Prediction)
+
+| Metric            | Value      | Interpretation                        |
+| ----------------- | ---------- | ------------------------------------- |
+| **R² Score**      | **0.8589** | Model explains ~86% of price variance |
+| **MAE**           | **€32.80** | Very low average prediction error     |
+| **Residual Bias** | Neutral    | No systematic over/underestimation    |
+
+---
+
+### 🧩 Classification Performance (Market Segmentation)
+
+Products are classified into **Low / Mid / High** value tiers.
+
+**Overall Accuracy:** **91.65%**
+
+| Segment  | Key Strength                                     |
+| -------- | ------------------------------------------------ |
+| **Low**  | 93.4% precision (reliable entry-level detection) |
+| **Mid**  | 89.0% recall (minimizes false negatives)         |
+| **High** | 92.5% precision (secure high-value predictions)  |
+
+---
+
+## 🛠️ Tech Stack & Project Structure
+
+### 🔧 Core Technologies
+
+* Python 3.12+
+* Scikit-learn
+* NumPy / Pandas
+* Streamlit
+* Joblib
+* NLP (TF-IDF, SVD)
+
+### 📁 Repository Structure
 
 ```text
 /smart-resale-ml-models
-├── data/ 
-│   ├── raw/            # Datasets sources Amazon & eBay
-│   └── processed/      # Données transformées et sets d'entraînement
-├── models/             # Artefacts sérialisés (modèles .pkl, scalers)
+├── data/
+│   ├── raw/              # Amazon & eBay source datasets
+│   └── processed/        # Cleaned & enriched training data
+├── models/               # Serialized ML artifacts (.pkl)
 ├── src/
-│   ├── pipeline/       # Scripts d'exécution (Step 1 à 4)
-│   ├── utils/          # Moteurs NLP, Preprocessing et Visualisation
-│   └── app.py          # Dashboard Streamlit de production
-└── static/plots/       # Rapports d'analyse diagnostique (plots)
-
+│   ├── pipeline/         # Step-by-step ML execution scripts
+│   ├── utils/            # NLP, preprocessing, visualization engines
+│   └── app.py            # Streamlit production dashboard
+└── static/plots/         # Diagnostic & evaluation visuals
 ```
 
----
-
-## 📈 4. Alignement avec les Standards CRISP-DM
-
-Ce projet implémente les concepts fondamentaux du Machine Learning moderne :
-
-1. **Traitement des Outliers :** Utilisation du seuil de 1.5x l'écart interquartile pour la robustesse statistique.
-2. **Transformation des Variables :** Application de `np.log1p` sur les variables de prix pour normaliser les distributions asymétriques.
-3. **Choix du Modèle :** Utilisation de **Random Forest** (Ensemble Learning), offrant une stabilité supérieure aux arbres de décision classiques et permettant l'analyse de l'importance des variables.
-4. **Stratégie de Déploiement :** Persistance des modèles via `joblib` pour une inférence instantanée dans l'interface utilisateur.
+✔️ Clean separation of concerns
+✔️ Reproducible & extensible architecture
 
 ---
 
-## 💡 5. Business Logic : Aide à la Décision
+## 📐 Methodological Alignment (CRISP-DM)
 
-Le système ne se contente pas de prédire ; il conseille. En comparant le `Prix Demandé` au `Prix Prédit`, l'algorithme génère des recommandations stratégiques :
+This project follows **industry-grade ML best practices**:
 
-* **"Undervalued" :** Opportunité d'achat immédiate (Arbitrage).
-* **"Overpriced" :** Recommandation de baisse de prix pour accélérer la rotation de stock.
-* **"Optimal" :** Alignement parfait avec les conditions du marché.
+1. **Outlier Treatment**
+
+   * IQR-based filtering for robustness
+2. **Variable Transformation**
+
+   * `log1p` applied to price variables
+3. **Model Selection**
+
+   * **Random Forest (Ensemble Learning)**
+
+     * High stability
+     * Non-linear modeling
+     * Feature importance explainability
+4. **Deployment Strategy**
+
+   * Models persisted with `joblib`
+   * Instant inference in production UI
+
+---
+
+## 💡 Business Decision Logic
+
+Smart Resale AI goes beyond prediction — it **advises**.
+
+By comparing:
+
+* **Requested Price**
+* **Predicted Market Price**
+
+The system generates strategic insights:
+
+| Recommendation  | Meaning                               |
+| --------------- | ------------------------------------- |
+| **Undervalued** | Immediate buy opportunity (arbitrage) |
+| **Overpriced**  | Price reduction advised               |
+| **Optimal**     | Market-aligned pricing                |
+
+---
+
+## ▶️ Pipeline Execution (Sample Log)
 
 ```bash
 $ python src/run_pipeline.py
-✓ Identifiants chargés pour l'utilisateur : snoussizied
-01:54:54 - INFO - 🚀 DÉMARRAGE DU PIPELINE COMPLET 'SMART RESALE'
-01:54:54 - INFO - ✅ Datasets bruts détectés. Passage à l'étape suivante.
-01:54:54 - INFO - 🚀 DÉMARRAGE DE L'ÉTAPE 1 : PRÉPARATION DES DONNÉES
-01:54:54 - INFO - Extraction des données eBay depuis les sources locales...
-01:54:54 - INFO - Nettoyage des données et filtrage statistique des anomalies...
-🔧 Nettoyage des données eBay...
-   Filtrage des anomalies de prix...
-   Nettoyage IQR : 1,920 outliers supprimés (Plage : €-299.98 - €606.62)
-✓ Prétraitement eBay terminé : 17,810 lignes conservées
-01:54:54 - INFO - Enrichissement via le catalogue Amazon (Vecteurs TF-IDF)...
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-✨ DÉMARRAGE DE L'ENRICHISSEMENT (MATCHING SÉMANTIQUE)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-🔍 Chargement du catalogue Amazon...
-   Catalogue de référence : 100,582 produits Tech
-
-⚙️ Construction de l'index de recherche (TF-IDF)...
-   Index de recherche généré avec succès.
-
-🤝 Appariement des bases de données...
-   Génération des requêtes depuis les données eBay...
-   Exécution de la recherche de similarité...
-
-🧹 Filtre de cohérence : Suppression de 4,215 anomalies (Prix Occasion > 1.5x Prix Neuf)
-
-✅ Enrichissement terminé !
-   Matches trouvés : 3,578 (20.1%)
-01:55:28 - INFO - ✅ Étape 1 terminée avec succès !
-01:55:28 - INFO - 📊 Volume final : 17,810 produits prêts pour l'entraînement.
-01:55:28 - INFO - 💾 Fichiers sauvegardés dans : data/processed/
-01:55:28 - INFO - 🚀 DÉMARRAGE DE L'ÉTAPE 2 : EXTRACTION DES CARACTÉRISTIQUES
-01:55:28 - INFO - Extraction des variables numériques et catégorielles...
-01:55:28 - INFO - Génération des vecteurs sémantiques (SVD) à partir des titres...
-01:55:29 - INFO - Normalisation des 26 caractéristiques...
-01:55:29 - INFO - ✅ Étape 2 terminée ! Nombre de features prêtes : 26
-01:55:29 - INFO - 🚀 DÉMARRAGE DE L'ENTRAÎNEMENT OPTIMISÉ (GRIDSEARCH)
-01:55:29 - INFO - 🔍 Recherche des meilleurs paramètres pour la Régression...
-Fitting 3 folds for each of 12 candidates, totalling 36 fits
-02:00:25 - INFO - ✨ Meilleurs paramètres Régression : {'bootstrap': True, 'max_depth': None, 'min_samples_split': 5, 'n_estimators': 200}
-💾 Artefact sauvegardé avec succès : models/price_regressor.pkl
-02:00:25 - INFO - 🔍 Recherche des meilleurs paramètres pour la Classification...
-Fitting 3 folds for each of 12 candidates, totalling 36 fits
-02:01:40 - INFO - ✨ Meilleurs paramètres Classification : {'bootstrap': True, 'max_depth': None, 'min_samples_split': 5, 'n_estimators': 200}
-💾 Artefact sauvegardé avec succès : models/price_classifier.pkl
-02:01:40 - INFO - ✅ Étape 3 terminée : Modèles optimisés sauvegardés.
-02:01:40 - INFO - 🚀 DÉMARRAGE DE L'ÉVALUATION VISUELLE...
-02:01:41 - INFO - 📸 Génération des rapports graphiques dans static/plots/...
-📈 Graphique d'erreur de prédiction sauvegardé : static/plots\prediction_error.png
-📊 Matrice de confusion sauvegardée : static/plots\confusion_matrix_detailed.png
-
---- RAPPORT DE CLASSIFICATION DÉTAILLÉ ---
-               precision    recall  f1-score   support
-
-         Low       0.92      0.92      0.92      5925
-         Mid       0.93      0.93      0.93      6003
-        High       0.87      0.88      0.88      5882
-
-    accuracy                           0.91     17810
-   macro avg       0.91      0.91      0.91     17810
-weighted avg       0.91      0.91      0.91     17810
-
-📊 Distribution des résidus sauvegardée : static/plots\error_distribution.png
-📊 Importance des variables sauvegardée : static/plots\feature_importance.png
-02:01:44 - INFO - ✅ Évaluation terminée. Les résultats sont disponibles dans 'static/plots/'.
-02:01:44 - INFO - 🎉 PIPELINE TERMINÉ AVEC SUCCÈS en 409.60 secondes !
+🚀 STARTING SMART RESALE PIPELINE
+✓ Raw datasets detected
+✓ 1,920 price outliers removed
+✓ 3,578 semantic matches found
+✓ 26 features generated
+✓ Random Forest models optimized (GridSearch)
+✓ Evaluation reports generated
+🎉 PIPELINE COMPLETED SUCCESSFULLY
 ```
 
-<img src="./static/plots/confusion_matrix_detailed.png">
-<img src="./static/plots/error_distribution.png">
-<img src="./static/plots/feature_importance.png">
-<img src="./static/plots/prediction_error.png">
+⏱️ **Total runtime:** ~409 seconds
+📊 **Artifacts saved:** models/, static/plots/
+
+---
+
+## 📊 Visual Outputs
+
+<p align="center">
+  <img src="./static/plots/confusion_matrix_detailed.png" width="45%">
+  <img src="./static/plots/error_distribution.png" width="45%">
+</p>
+<p align="center">
+  <img src="./static/plots/feature_importance.png" width="45%">
+  <img src="./static/plots/prediction_error.png" width="45%">
+</p>
+
+---
+
+## 🚀 Live & Source Access
+
+* 📦 Source Code: [https://github.com/zied-snoussi/smart-resale-ml-models](https://github.com/zied-snoussi/smart-resale-ml-models)
+* 🌐 Live Dashboard: [https://smart-resale-ml-models.streamlit.app/](https://smart-resale-ml-models.streamlit.app/)
+* Built & deployed using **GitHub** and **Streamlit**
+
+---
+
+## 👤 Author
+
+**Zied Snoussi**
+Full-Stack Developer & Machine Learning Engineer
+📍 Tunisia
+🏆 Focus: AI-powered decision systems, production ML, scalable architectures
+
+---
