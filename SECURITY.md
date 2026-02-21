@@ -22,7 +22,7 @@ We take security issues seriously. If you discover a vulnerability, please follo
 - **Do not** open a public GitHub issue.
 - Report vulnerabilities **privately** by:
   - Opening a **GitHub Security Advisory**, or
-  - Sending an email to: **security@smart-resale.ai** *(placeholder)*
+  - Sending an email to: **ziedalsnoussi@gmail.com**
 
 ### 🕒 Response Timeline
 - **Initial response:** within **48 hours**
