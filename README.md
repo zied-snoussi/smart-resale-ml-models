@@ -36,7 +36,7 @@ Le modèle a été validé par un protocole de test rigoureux (Hold-out validati
 
 | Métrique | Score | Interprétation |
 | --- | --- | --- |
-| **Coefficient ** | **0.8589** | 86% de la variance du prix est capturée par le modèle. |
+| **Coefficient** | **0.8589** | 86% de la variance du prix est capturée par le modèle. |
 | **MAE (Erreur Moyenne)** | **32.80€** | Écart moyen extrêmement faible par rapport au prix réel. |
 | **Biais Résiduel** | **Neutre** | Distribution d'erreur centrée sur zéro (pas de sur/sous-estimation systématique). |
 
@@ -160,3 +160,8 @@ weighted avg       0.91      0.91      0.91     17810
 02:01:44 - INFO - ✅ Évaluation terminée. Les résultats sont disponibles dans 'static/plots/'.
 02:01:44 - INFO - 🎉 PIPELINE TERMINÉ AVEC SUCCÈS en 409.60 secondes !
 ```
+
+<img src="./static/plots/confusion_matrix_detailed.png">
+<img src="./static/plots/error_distribution.png">
+<img src="./static/plots/feature_importance.png">
+<img src="./static/plots/prediction_error.png">
