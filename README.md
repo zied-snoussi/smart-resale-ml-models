@@ -5,7 +5,9 @@
 > **Smart Resale AI** is an end-to-end Machine Learning system designed to **estimate fair resale prices**, **segment products by market tier**, and **generate actionable business recommendations** using multi-source e-commerce data.
 
 🔗 **Repository:** [https://github.com/zied-snoussi/smart-resale-ml-models](https://github.com/zied-snoussi/smart-resale-ml-models)
+
 🌐 **Live Demo (Dashboard):** [https://smart-resale-ml-models.streamlit.app/](https://smart-resale-ml-models.streamlit.app/)
+
 
 <a href="https://smart-resale-ml-models.streamlit.app" target="_blank" rel="noopener noreferrer">
   <img src="./streamlit.png" width="100%">
