@@ -11,6 +11,10 @@
 🔗 **Repository:** [https://github.com/zied-snoussi/smart-resale-ml-models](https://github.com/zied-snoussi/smart-resale-ml-models)
 🌐 **Live Demo (Dashboard):** [https://smart-resale-ml-models.streamlit.app/](https://smart-resale-ml-models.streamlit.app/)
 
+<a href="https://smart-resale-ml-models.streamlit.app" target="_blank" align="center">
+  <img src="./streamlit.png" width="100%">
+</a>
+
 ---
 
 ## 🧠 Project Vision
