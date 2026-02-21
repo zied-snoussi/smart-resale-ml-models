@@ -14,9 +14,7 @@ data/
 .env
 
 # Model files (too large for GitHub)
-models/
 *.h5
-*.pkl
 *.pth
 *.ckpt
 
