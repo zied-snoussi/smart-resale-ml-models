@@ -88,7 +88,6 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 python-json-logger==4.0.0
 python-slugify==8.0.4
-pywinpty==3.0.3
 PyYAML==6.0.3
 pyzmq==27.1.0
 referencing==0.37.0
@@ -105,7 +104,6 @@ setuptools==82.0.0
 six==1.17.0
 soupsieve==2.8.3
 stack-data==0.6.3
-terminado==0.18.1
 text-unidecode==1.3
 threadpoolctl==3.6.0
 tinycss2==1.4.0
@@ -121,7 +119,6 @@ webcolors==25.10.0
 webencodings==0.5.1
 websocket-client==1.9.0
 Werkzeug==3.1.5
-widgetsnbextension==4.0.15
 xgboost
 streamlit
 standard-imghdr
