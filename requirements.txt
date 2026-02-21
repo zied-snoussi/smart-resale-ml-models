@@ -38,7 +38,7 @@ isoduration==20.11.0
 itsdangerous==2.2.0
 jedi==0.19.2
 Jinja2==3.1.6
-joblib==1.5.3
+joblib
 json5==0.13.0
 jsonpointer==3.0.0
 jsonschema==4.26.0
@@ -69,9 +69,9 @@ nbformat==5.10.4
 nest-asyncio==1.6.0
 notebook==7.5.3
 notebook_shim==0.2.4
-numpy==2.4.2
+numpy
 packaging==26.0
-pandas==3.0.0
+pandas
 pandocfilters==1.5.1
 parso==0.8.6
 pillow==12.1.1
@@ -96,7 +96,7 @@ rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rfc3987-syntax==1.1.0
 rpds-py==0.30.0
-scikit-learn==1.8.0
+scikit-learn
 scipy==1.17.0
 seaborn==0.13.2
 Send2Trash==2.1.0
@@ -120,6 +120,8 @@ webencodings==0.5.1
 websocket-client==1.9.0
 Werkzeug==3.1.5
 xgboost
-streamlit
+streamlit>=1.40.0
 standard-imghdr
+altair<6.0.0
 pandera
+plotly
